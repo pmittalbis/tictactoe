@@ -1,0 +1,19 @@
+.header {
+    position: fixed;
+    height: 100px;
+    top: 0;
+    width: 100%;
+}
+.footer {
+    position: fixed;
+    height: 100px;
+    bottom: 0px;
+    width: 100%;
+}
+.square {
+	height: 100px;
+	width: 100px;
+	background: #fff;
+	padding: 2px;
+	font-size: 46px;
+}
