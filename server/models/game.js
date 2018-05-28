@@ -3,8 +3,10 @@ const Schema = mongoose.Schema;
 
 
 const gameSchema = new  Schema({
-	player1: Schema.Types.ObjectId,
-	player2: Schema.Types.ObjectId,
+	player1: String,
+	player2: String,
+	completed: Boolean,
+	moves: [String]
 });
 
 module.exports = mongoose.model('Game', gameSchema);

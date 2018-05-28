@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
-// import { gql, graphql } from 'apollo-boost';
+import { graphql, compose } from 'react-apollo';
 // import { Query } from 'react-apollo';
+import { addGameMutation, addPlayerMutation, updateGameMutation } from '../queries/queries.js';
 
 class Board extends Component {
 	constructor(props){
@@ -11,6 +12,9 @@ class Board extends Component {
 			currentPlayer: 1
 		}
 	}
+  componentDidMount(){
+    this.addGame();
+  }
   onButtonClick(e){
    	if (e.target.value === '') {
 	  	if (this.state.currentPlayer === 1) {
@@ -125,8 +129,56 @@ class Board extends Component {
   		}
   	}
   }
+  async addGame(){
+    const game = await this.props.addGameMutation({
+      variables: {
+        player1: "",
+        player2: ""
+      }
+    });
+    let p1;
+    console.log("Added game...");
+    if (!game.data.addGame.player1 && !game.data.addGame.completed) {
+      p1 = await this.props.addPlayerMutation({
+        variables: {
+          name: "Player1",
+          gameID: game.data.addGame.id
+        }
+      });
+      console.log("Added player1");
+
+      //updating game with player1 id
+      // console.log(game.data.addGame.id);
+      // console.log(p1.data.addPlayer.id);
+      this.props.updateGameMutation({
+        variables: {
+          id: game.data.addGame.id,
+          player1: p1.data.addPlayer.id,
+          player2: "p2",
+          completed: false
+        }
+      });
+      console.log('updating game with player1 id');
+    } else {
+      const p2 = await this.props.addPlayerMutation({
+        variables: {
+          name: "Player2",
+          gameID: game.data.addGame.id
+        }
+      });
+      console.log("Added player2");
+      this.props.updateGameMutation({
+        variables: {
+          id: game.data.addGame.id,
+          player1: p1.data.addPlayer.id,
+          player2: p2.data.addPlayer.id,
+          completed: true
+        }
+      });
+      console.log('updating game with player1 id and player2 id');
+    }
+  }
   resetGame () {
-  	debugger;
   	let inputs = document.getElementsByTagName('input');
   	for (var i = 0; i < inputs.length; i++) {
   		inputs[i].value = '';
@@ -166,4 +218,8 @@ class Board extends Component {
   }
 }
 
-export default Board;
+export default compose(
+  graphql(addGameMutation, { name: "addGameMutation" }),
+  graphql(addPlayerMutation, { name: "addPlayerMutation" }),
+  graphql(updateGameMutation, { name: "updateGameMutation" })
+  )(Board);
