@@ -1,60 +1,113 @@
 import React, { Component } from 'react';
 import { graphql, compose } from 'react-apollo';
+import _ from 'lodash';
 // import { Query } from 'react-apollo';
-import { addGameMutation, addPlayerMutation, updateGameMutation } from '../queries/queries.js';
+import { 
+  addGameMutation,
+  addPlayerMutation,
+  updateGameMutation,
+  getGamesQuery,
+  getPlayersQuery,
+  getGameQuery,
+  getPlayerQuery
+   } from '../queries/queries.js';
 
+let addedGame;
+let p1;
+let p2;
+let updatedGame;
 class Board extends Component {
 	constructor(props){
 		super(props);
 		this.state = {
 			player1: 'X',
 			player2: 'O',
-			currentPlayer: 1
+			currentPlayer: 1,
+      games: null,
+      currentGame: {}
 		}
 	}
-  componentDidMount(){
+
+  componentDidMount() {
     this.addGame();
   }
-  onButtonClick(e){
-   	if (e.target.value === '') {
-	  	if (this.state.currentPlayer === 1) {
-	  		e.target.value = this.state.player1;
-	  		let isMatched = this.checkRowMatches(this.state.player1);
-	  		if (isMatched) {
-	  			return this.resetGame();
-	  		}
-	  		isMatched = this.checkColumnMatches(this.state.player1);
-	  		if (isMatched) {
-	  			return this.resetGame();
-	  		}
-	  		isMatched = this.checkDiagonalMatches(this.state.player1);
-	  		if (isMatched) {
-	  			return this.resetGame();
-	  		}
-	  		this.setState({
-	  			currentPlayer: 2
-	  		});
-	  	} else if (this.state.currentPlayer === 2) {
-	  		e.target.value = this.state.player2;
-	  		let isMatched = this.checkRowMatches(this.state.player2);
-	  		if (isMatched) {
-	  			return this.resetGame();
-	  		}
-	  		isMatched = this.checkColumnMatches(this.state.player2)
-	  		if (isMatched) {
-	  			return this.resetGame();
-	  		}
-	  		isMatched = this.checkDiagonalMatches(this.state.player2)
-	  		if (isMatched) {
-	  			return this.resetGame();
-	  		}
-	  		this.setState({
-	  			currentPlayer: 1
-	  		});
-	  	}
-  	}
+
+  componentWillReceiveProps(nextProps) {
+    this.getGames(nextProps);
   }
-  checkRowMatches(currentInput){
+
+  async addGame() {
+    // debugger
+    addedGame = await this.props.addGameMutation({
+      variables: {
+        player1: null,
+        player2: null,
+        moves: [],
+        isCompleted: false,
+        isPending: true
+      }
+    });
+    console.log("Added game...", addedGame.data.addGame.id);
+  }
+
+  async addPlayers() {
+    // debugger
+    if (this.state.games) {
+      const pendingGame = await _.filter(this.state.games, { 'id': addedGame.data.addGame.id, 'isPending': true });
+      this.setState({
+        currentGame: pendingGame[0]
+      });
+      console.log("currentGame ", this.state.currentGame);
+      console.log('pendingGame = ', pendingGame);
+      if (!pendingGame[0].player1 && pendingGame[0].isPending) {
+        p1 = await this.props.addPlayerMutation({
+          variables: {
+            name: "Player1",
+            gameID: pendingGame[0].id
+          }
+        });
+        console.log("Added player1 ", p1.data.addPlayer.id);
+        updatedGame = await this.props.updateGameMutation({
+          variables: {
+            id: pendingGame[0].id,
+            player1: p1.data.addPlayer.id,
+            player2: null,
+            moves: [],
+            isCompleted: false,
+            isPending: true
+          }
+        });
+        this.setState({
+        currentGame: updatedGame
+      });
+        console.log('updating game with player1 id', p1.data.addPlayer.id);
+      } else if (!pendingGame[0].player2 && pendingGame[0].isPending) {
+        p2 = await this.props.addPlayerMutation({
+          variables: {
+            name: "Player2",
+            gameID: pendingGame[0].id
+          }
+        });
+        console.log("Added player2 ", p2.data.addPlayer.id);
+        updatedGame = await this.props.updateGameMutation({
+          variables: {
+            id: pendingGame[0].id,
+            player1: p1.data.addPlayer.id,
+            player2: p2.data.addPlayer.id,
+            moves: [],
+            isCompleted: false,
+            isPending: false
+          }
+        });
+        this.setState({
+          currentGame: updatedGame
+        });
+        console.log('updating game with player1 id and player2 id ' , p2.data.addPlayer.id);
+      }
+    }
+  }
+
+  checkRowMatches(currentInput) {
   	let inputs = document.getElementsByTagName('input');
   	if (inputs[0].value === currentInput) {
   		if (inputs[1].value === currentInput) {
@@ -79,7 +132,8 @@ class Board extends Component {
   		}
   	}
   }
-	checkColumnMatches(currentInput){
+
+	checkColumnMatches(currentInput) {
   	let inputs = document.getElementsByTagName('input');
   	if (inputs[0].value === currentInput) {
   		if (inputs[3].value === currentInput) {
@@ -104,7 +158,8 @@ class Board extends Component {
   		}
   	}
   }
-  checkDiagonalMatches(currentInput){
+
+  checkDiagonalMatches(currentInput) {
   	let inputs = document.getElementsByTagName('input');
   	if (inputs[0].value === currentInput) {
   		if (inputs[4].value === currentInput) {
@@ -129,53 +184,55 @@ class Board extends Component {
   		}
   	}
   }
-  async addGame(){
-    const game = await this.props.addGameMutation({
-      variables: {
-        player1: "",
-        player2: ""
-      }
-    });
-    let p1;
-    console.log("Added game...");
-    if (!game.data.addGame.player1 && !game.data.addGame.completed) {
-      p1 = await this.props.addPlayerMutation({
-        variables: {
-          name: "Player1",
-          gameID: game.data.addGame.id
-        }
-      });
-      console.log("Added player1");
 
-      //updating game with player1 id
-      // console.log(game.data.addGame.id);
-      // console.log(p1.data.addPlayer.id);
-      this.props.updateGameMutation({
-        variables: {
-          id: game.data.addGame.id,
-          player1: p1.data.addPlayer.id,
-          player2: "p2",
-          completed: false
+  async getGames(nextProps) {
+    let gameList = await nextProps.getGamesQuery.games;
+    console.log(await gameList);
+    debugger
+    await this.setState({
+      games: gameList
+    });
+    //console.log(gameList);
+    this.addPlayers();
+  }
+
+  onButtonClick(e) {
+    if (e.target.value === '') {
+      if (this.state.currentPlayer === 1) {
+        e.target.value = this.state.player1;
+        let isMatched = this.checkRowMatches(this.state.player1);
+        if (isMatched) {
+          return this.resetGame();
         }
-      });
-      console.log('updating game with player1 id');
-    } else {
-      const p2 = await this.props.addPlayerMutation({
-        variables: {
-          name: "Player2",
-          gameID: game.data.addGame.id
+        isMatched = this.checkColumnMatches(this.state.player1);
+        if (isMatched) {
+          return this.resetGame();
         }
-      });
-      console.log("Added player2");
-      this.props.updateGameMutation({
-        variables: {
-          id: game.data.addGame.id,
-          player1: p1.data.addPlayer.id,
-          player2: p2.data.addPlayer.id,
-          completed: true
+        isMatched = this.checkDiagonalMatches(this.state.player1);
+        if (isMatched) {
+          return this.resetGame();
         }
-      });
-      console.log('updating game with player1 id and player2 id');
+        this.setState({
+          currentPlayer: 2
+        });
+      } else if (this.state.currentPlayer === 2) {
+        e.target.value = this.state.player2;
+        let isMatched = this.checkRowMatches(this.state.player2);
+        if (isMatched) {
+          return this.resetGame();
+        }
+        isMatched = this.checkColumnMatches(this.state.player2)
+        if (isMatched) {
+          return this.resetGame();
+        }
+        isMatched = this.checkDiagonalMatches(this.state.player2)
+        if (isMatched) {
+          return this.resetGame();
+        }
+        this.setState({
+          currentPlayer: 1
+        });
+      }
     }
   }
   resetGame () {
@@ -219,6 +276,10 @@ class Board extends Component {
 }
 
 export default compose(
+  graphql(getGamesQuery, { name: "getGamesQuery" }),
+  graphql(getPlayersQuery, { name: "getPlayersQuery" }),
+  //graphql(getGameQuery, { name: "getGameQuery" }),
+  //graphql(getPlayerQuery, { name: "getPlayerQuery" }),
   graphql(addGameMutation, { name: "addGameMutation" }),
   graphql(addPlayerMutation, { name: "addPlayerMutation" }),
   graphql(updateGameMutation, { name: "updateGameMutation" })
