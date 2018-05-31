@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { graphql, compose } from 'react-apollo';
 import _ from 'lodash';
-// import { Query } from 'react-apollo';
 import { 
   addGameMutation,
   addPlayerMutation,
@@ -15,7 +14,9 @@ import {
 let addedGame;
 let p1;
 let p2;
-let updatedGame;
+let updatedGame1;
+let updatedGame2;
+let temp;
 class Board extends Component {
 	constructor(props){
 		super(props);
@@ -26,6 +27,12 @@ class Board extends Component {
       games: null,
       currentGame: {}
 		}
+    this.addPlayers = this.addPlayers.bind(this);
+    this.addGame = this.addGame.bind(this);
+    this.getGames = this.getGames.bind(this);
+    this.checkRowMatches = this.checkRowMatches.bind(this);
+    this.checkColumnMatches = this.checkColumnMatches.bind(this);
+    this.checkDiagonalMatches = this.checkDiagonalMatches.bind(this);
 	}
 
   componentDidMount() {
@@ -33,25 +40,26 @@ class Board extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    this.getGames(nextProps);
+    if (this.props !== nextProps) {
+      this.getGames(nextProps);
+    }
   }
 
   async addGame() {
     // debugger
     addedGame = await this.props.addGameMutation({
       variables: {
-        player1: null,
-        player2: null,
-        moves: [],
+        player1: "5b0e95bc1d512433c4a08959",
+        player2: "5b0e95bc1d512433c4a08959",
+        moves: ['t', 't', 't', 't', 't', 't', 't', 't', 't'],
         isCompleted: false,
         isPending: true
       }
     });
-    console.log("Added game...", addedGame.data.addGame.id);
+    console.log("Added game...", addedGame.data.addGame.moves);
   }
 
   async addPlayers() {
-    // debugger
     if (this.state.games) {
       const pendingGame = await _.filter(this.state.games, { 'id': addedGame.data.addGame.id, 'isPending': true });
       this.setState({
@@ -67,19 +75,19 @@ class Board extends Component {
           }
         });
         console.log("Added player1 ", p1.data.addPlayer.id);
-        updatedGame = await this.props.updateGameMutation({
+        updatedGame1 = await this.props.updateGameMutation({
           variables: {
             id: pendingGame[0].id,
             player1: p1.data.addPlayer.id,
             player2: null,
-            moves: [],
+            moves: Array(9).fill(''),
             isCompleted: false,
             isPending: true
           }
         });
         this.setState({
-        currentGame: updatedGame
-      });
+          currentGame: updatedGame1.data.updateGame
+        });
         console.log('updating game with player1 id', p1.data.addPlayer.id);
       } else if (!pendingGame[0].player2 && pendingGame[0].isPending) {
         p2 = await this.props.addPlayerMutation({
@@ -89,43 +97,46 @@ class Board extends Component {
           }
         });
         console.log("Added player2 ", p2.data.addPlayer.id);
-        updatedGame = await this.props.updateGameMutation({
+        debugger
+        updatedGame2 = await this.props.updateGameMutation({
           variables: {
             id: pendingGame[0].id,
             player1: p1.data.addPlayer.id,
             player2: p2.data.addPlayer.id,
-            moves: [],
+            moves: Array(9).fill(''),
             isCompleted: false,
             isPending: false
           }
         });
+        console.log("updateGame>>>>>",updatedGame2);
         this.setState({
-          currentGame: updatedGame
+          currentGame: updatedGame2.data.updateGame
         });
-        console.log('updating game with player1 id and player2 id ' , p2.data.addPlayer.id);
+        console.log('Updating game with player1 id and player2 id ' , p2.data.addPlayer.id);
       }
     }
   }
 
   checkRowMatches(currentInput) {
-  	let inputs = document.getElementsByTagName('input');
-  	if (inputs[0].value === currentInput) {
-  		if (inputs[1].value === currentInput) {
-  			if (inputs[2].value === currentInput) {
+    // let inputs = document.getElementsByTagName('input');
+  	let inputs = temp;
+  	if (inputs[0] === currentInput) {
+  		if (inputs[1] === currentInput) {
+  			if (inputs[2] === currentInput) {
   				alert('Player' + this.state.currentPlayer + ' wins!');
 	  			return true;
   			}
   		}
-  	} else if (inputs[3].value === currentInput) {
-  		if (inputs[4].value === currentInput) {
-  			if (inputs[5].value === currentInput) {
+  	} else if (inputs[3] === currentInput) {
+  		if (inputs[4] === currentInput) {
+  			if (inputs[5] === currentInput) {
   				alert('Player' + this.state.currentPlayer + ' wins!');
 	  			return true;
   			}
   		}
-  	} else if (inputs[6].value === currentInput) {
-  		if (inputs[7].value === currentInput) {
-  			if (inputs[8].value === currentInput) {
+  	} else if (inputs[6] === currentInput) {
+  		if (inputs[7] === currentInput) {
+  			if (inputs[8] === currentInput) {
   				alert('Player' + this.state.currentPlayer + ' wins!');
 	  			return true;
   			}
@@ -134,24 +145,25 @@ class Board extends Component {
   }
 
 	checkColumnMatches(currentInput) {
-  	let inputs = document.getElementsByTagName('input');
-  	if (inputs[0].value === currentInput) {
-  		if (inputs[3].value === currentInput) {
-  			if (inputs[6].value === currentInput) {
+    // let inputs = document.getElementsByTagName('input');
+  	let inputs = temp;
+  	if (inputs[0] === currentInput) {
+  		if (inputs[3] === currentInput) {
+  			if (inputs[6] === currentInput) {
   				alert('Player' + this.state.currentPlayer + ' wins!');
 	  			return true;
   			}
   		}
-  	} else if (inputs[1].value === currentInput) {
-  		if (inputs[4].value === currentInput) {
-  			if (inputs[7].value === currentInput) {
+  	} else if (inputs[1] === currentInput) {
+  		if (inputs[4] === currentInput) {
+  			if (inputs[7] === currentInput) {
   				alert('Player' + this.state.currentPlayer + ' wins!');
 	  			return true;
   			}
   		}
-  	} else if (inputs[2].value === currentInput) {
-  		if (inputs[5].value === currentInput) {
-  			if (inputs[8].value === currentInput) {
+  	} else if (inputs[2] === currentInput) {
+  		if (inputs[5] === currentInput) {
+  			if (inputs[8] === currentInput) {
   				alert('Player' + this.state.currentPlayer + ' wins!');
 	  			return true;
   			}
@@ -160,24 +172,26 @@ class Board extends Component {
   }
 
   checkDiagonalMatches(currentInput) {
-  	let inputs = document.getElementsByTagName('input');
-  	if (inputs[0].value === currentInput) {
-  		if (inputs[4].value === currentInput) {
-  			if (inputs[8].value === currentInput) {
+    // let inputs = document.getElementsByTagName('input');
+  	let inputs = temp;
+  	if (inputs[0] === currentInput) {
+  		if (inputs[4] === currentInput) {
+  			if (inputs[8] === currentInput) {
   				alert('Player' + this.state.currentPlayer + ' wins!');
 	  			return true;
   			}
   		}
-  	} else if (inputs[2].value === currentInput) {
-  		if (inputs[4].value === currentInput) {
-  			if (inputs[6].value === currentInput) {
+  	} else if (inputs[2] === currentInput) {
+     
+  		if (inputs[4] === currentInput) {
+  			if (inputs[6] === currentInput) {
   				alert('Player' + this.state.currentPlayer + ' wins!');
 	  			return true;
   			}
   		}
-  	} else if (inputs[2].value === currentInput) {
-  		if (inputs[5].value === currentInput) {
-  			if (inputs[8].value === currentInput) {
+  	} else if (inputs[2] === currentInput) {
+  		if (inputs[5] === currentInput) {
+  			if (inputs[8] === currentInput) {
   				alert('Player' + this.state.currentPlayer + ' wins!');
 	  			return true;
   			}
@@ -187,19 +201,96 @@ class Board extends Component {
 
   async getGames(nextProps) {
     let gameList = await nextProps.getGamesQuery.games;
-    console.log(await gameList);
-    debugger
+    console.log("gameList ", gameList);
     await this.setState({
       games: gameList
     });
-    //console.log(gameList);
     this.addPlayers();
   }
 
-  onButtonClick(e) {
+  async onButtonClick(e) {
+    // if (e.target.value === '') {
+    //   if (this.state.currentPlayer === 1) {
+    //     e.target.value = this.state.player1;
+    //     this.setState({
+    //       currentPlayer: 2
+    //     });
+    //     var id = e.target.id;
+    //     //code for updating games.moves with each move
+    //     console.log(this.state.currentGame);
+    //     // var temp = await this.state.currentGame.moves;
+    //     temp.splice(id, 1, this.state.player1);
+    //     console.log('temp = ', temp);
+    //   //   await this.props.updateGameMutation({
+    //   //   variables: {
+    //   //     id: this.state.currentGame.id,
+    //   //     player1: this.state.currentGame.player1,
+    //   //     player2: this.state.currentGame.player2,
+    //   //     moves: temp,
+    //   //     isCompleted: this.state.currentGame.isCompleted,
+    //   //     isPending: this.state.currentGame.isPending
+    //   //   }
+    //   // });
+    //     console.log('Moves: ', this.state.currentGame.moves);
+    //     }
+    //     let isMatched = this.checkRowMatches(this.state.player1);
+    //     if (isMatched) {
+    //       return this.resetGame();
+    //     }
+    //     isMatched = this.checkColumnMatches(this.state.player1);
+    //     if (isMatched) {
+    //       return this.resetGame();
+    //     }
+    //     isMatched = this.checkDiagonalMatches(this.state.player1);
+    //     if (isMatched) {
+    //       return this.resetGame();
+    //     }
+        
+    //     debugger;
+    //   } else if (this.state.currentPlayer === 2) {
+    //     e.target.value = this.state.player2;
+    //     console.log(this.state.currentPlayer);
+    //     let isMatched = this.checkRowMatches(this.state.player2);
+    //     if (isMatched) {
+    //       return this.resetGame();
+    //     }
+    //     isMatched = this.checkColumnMatches(this.state.player2)
+    //     if (isMatched) {
+    //       return this.resetGame();
+    //     }
+    //     isMatched = this.checkDiagonalMatches(this.state.player2)
+    //     if (isMatched) {
+    //       return this.resetGame();
+    //     }
+    //     this.setState({
+    //       currentPlayer: 1
+    //     });
+    //   }
+    // }
     if (e.target.value === '') {
       if (this.state.currentPlayer === 1) {
         e.target.value = this.state.player1;
+        var id = e.target.id;
+        let tempArr = await this.state.currentGame.moves;
+        let newArr = tempArr;
+        tempArr = newArr;
+        debugger;
+        tempArr.splice(id, 1, this.state.player1);
+        temp = tempArr;
+        const updated = await this.props.updateGameMutation({
+          variables: {
+            id: this.state.currentGame.id,
+            player1: this.state.currentGame.player1,
+            player2: this.state.currentGame.player2,
+            moves: tempArr,
+            isCompleted: this.state.currentGame.isCompleted,
+            isPending: this.state.currentGame.isPending
+          }
+        });
+        this.setState({
+          currentGame: updated.data.updateGame
+        });
+        console.log(updated.data.updateGame);
         let isMatched = this.checkRowMatches(this.state.player1);
         if (isMatched) {
           return this.resetGame();
@@ -217,7 +308,26 @@ class Board extends Component {
         });
       } else if (this.state.currentPlayer === 2) {
         e.target.value = this.state.player2;
-        let isMatched = this.checkRowMatches(this.state.player2);
+        var id = e.target.id;
+        let tempArr = await this.state.currentGame.moves;
+        let newArr = tempArr;
+        tempArr = newArr;
+        temp = tempArr;
+        tempArr.splice(id, 1, this.state.player2);
+        const updated = await this.props.updateGameMutation({
+          variables: {
+            id: this.state.currentGame.id,
+            player1: this.state.currentGame.player1,
+            player2: this.state.currentGame.player2,
+            moves: tempArr,
+            isCompleted: this.state.currentGame.isCompleted,
+            isPending: this.state.currentGame.isPending
+          }
+        });
+        this.setState({
+          currentGame: updated.data.updateGame
+        });
+        console.log(updated.data.updateGame);        let isMatched = this.checkRowMatches(this.state.player2);
         if (isMatched) {
           return this.resetGame();
         }
@@ -246,6 +356,8 @@ class Board extends Component {
   }
   render() {
   	let player = 'Player' + this.state.currentPlayer;
+    // console.log('currentGame after update2: ', this.state.currentGame);
+    console.log("games state = ", this.state.gameList)
     return (
     	<div>
     		<div className='col-md-4'>
@@ -253,16 +365,16 @@ class Board extends Component {
     		</div>
     		<div className='col-md-4'>
 	    		<div className='btn-group'>
-	    			<input id='0' type='button' className='square' onClick={this.onButtonClick.bind(this)}/>
+            <input id='0' type='button' className='square' onClick={this.onButtonClick.bind(this)}/>
 	    			<input id='1' type='button' className='square' onClick={this.onButtonClick.bind(this)}/>
 	    			<input id='2' type='button' className='square' onClick={this.onButtonClick.bind(this)}/>
-		      </div>
-		      <div className=''>
+          </div>
+          <div className=''>
 						<input id='3' type='button' className='square' onClick={this.onButtonClick.bind(this)}/>
 	    			<input id='4' type='button' className='square' onClick={this.onButtonClick.bind(this)}/>
 	    			<input id='5' type='button' className='square' onClick={this.onButtonClick.bind(this)}/>
-		      </div>
-		      <div className=''>
+          </div>
+          <div className=''>
 						<input id='6' type='button' className='square' onClick={this.onButtonClick.bind(this)}/>
 	    			<input id='7' type='button' className='square' onClick={this.onButtonClick.bind(this)}/>
 	    			<input id='8' type='button' className='square' onClick={this.onButtonClick.bind(this)}/>

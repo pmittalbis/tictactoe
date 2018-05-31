@@ -111,7 +111,7 @@ const Mutation = new GraphQLObjectType({
           player2: args.player2,
           isCompleted: false,
           isPending: true,
-          moves: []
+          moves: args.moves
         });
         return game.save();
       }
