@@ -9,14 +9,14 @@ app.use(cors());
 
 mongoose.connect('mongodb://localhost:27017/tictactoe');
 mongoose.connection.once('open', () => {
-	console.log('connected to db...');
+  console.log('connected to db...');
 });
 
 app.use('/graphql', graphqlHTTP({
-	schema,
-	graphiql: true
+  schema,
+  graphiql: true
 }));
 
-app.listen(4000, () => {
-	console.log('Listening at Port 4000...');
+app.listen(5000, () => {
+  console.log('Listening at Port 4000...');
 });
