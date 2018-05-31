@@ -1,7 +1,6 @@
 const graphql = require('graphql');
 const Player = require('../models/player.js');
 const Game = require('../models/game.js');
-const _ = require('lodash');
 
 const { 
   GraphQLObjectType,
@@ -11,8 +10,8 @@ const {
   GraphQLList,
   GraphQLID,
   GraphQLNonNull,
-  GraphQLBoolean
-   } = graphql;
+  GraphQLBoolean,
+} = graphql;
 
 const PlayerType = new GraphQLObjectType({
   name: 'Player',
@@ -24,8 +23,8 @@ const PlayerType = new GraphQLObjectType({
       type: GameType,
       resolve(parent, args){
         return Game.findById(parent.gameID);
-      }
-    }
+      },
+    },
   })
 });
 
@@ -42,7 +41,7 @@ const GameType = new GraphQLObjectType({
       type: new GraphQLList(PlayerType),
       resolve(parent, args){
         return Player.find({ gameID: parent.id});
-      }
+      },
     }
   })
 });
@@ -55,26 +54,36 @@ const RootQuery = new GraphQLObjectType({
       args: { id: { type: GraphQLID } },
       resolve(parent, args){
         return Player.findById(args.id);
-      }
+      },
     },
     game: {
       type: GameType,
       args: { id: { type: GraphQLID }},
       resolve(parent, args){
         return Game.findById(args.id);
-      }
+      },
     },
     players: {
       type: new GraphQLList(PlayerType),
       resolve(parent, args){
         return Player.find({});
-      }
+      },
     },
     games: {
       type: new GraphQLList(GameType),
       resolve(parent, args){
         return Game.find({});
-      }
+      },
+    },
+    lastGame: {
+      type: GameType,
+      args: { id: { type: GraphQLID }},
+      resolve(parent, args){
+        let data = Game.findOne({}, {}, { sort: { 'created_at' : 1 } }).limit(1)
+        .then((game) => { console.log(game) })
+        .catch((err) => { console.log(err); })
+        return data;
+      },
     }
   }
 });
@@ -94,7 +103,7 @@ const Mutation = new GraphQLObjectType({
           gameID: args.gameID
         });
         return player.save();
-      }
+      },
     },
     addGame: {
       type: GameType,
@@ -114,7 +123,7 @@ const Mutation = new GraphQLObjectType({
           moves: args.moves
         });
         return game.save();
-      }
+      },
     },
     updateGame: {
       type: GameType,
@@ -134,20 +143,17 @@ const Mutation = new GraphQLObjectType({
         let game = await Game.findOneAndUpdate({_id: args.id}, {
           player1: args.player1,
           player2: args.player2,
+          moves: args.moves,
           isCompleted: args.isCompleted,
           isPending: args.isPending 
-        }, 
-          (err) => {
-            if (err) { console.log("Error in updating" , err); }
-            console.log("updated games record");
-          });
+        }, { new: true });
         return game;
-      }
+      },
     }
   }
 });
 
 module.exports = new GraphQLSchema({
   query: RootQuery,
-  mutation: Mutation
+  mutation: Mutation,
 });
