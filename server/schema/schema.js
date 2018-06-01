@@ -77,12 +77,10 @@ const RootQuery = new GraphQLObjectType({
     },
     lastGame: {
       type: GameType,
-      args: { id: { type: GraphQLID }},
-      resolve(parent, args){
-        let data = Game.findOne({}, {}, { sort: { 'created_at' : 1 } }).limit(1)
-        .then((game) => { console.log(game) })
-        .catch((err) => { console.log(err); })
-        return data;
+      async resolve(parent, args){
+        let lastGame = await Game.findOne().sort({ '_id': -1 }).limit(1);
+        console.log(lastGame);
+        return lastGame;
       },
     }
   }
