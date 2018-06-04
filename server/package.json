@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint models"
   },
   "author": "",
   "license": "ISC",
@@ -13,9 +14,14 @@
     "express": "^4.16.3",
     "express-graphql": "^0.6.12",
     "graphql": "^0.13.2",
+    "lint": "^1.1.2",
     "loadash": "^1.0.0",
     "lodash": "^4.17.10",
     "mongoose": "^5.1.2",
     "nodemon": "^1.17.5"
+  },
+  "devDependencies": {
+    "eslint-config-airbnb-base": "^12.1.0",
+    "eslint-plugin-import": "^2.12.0"
   }
 }

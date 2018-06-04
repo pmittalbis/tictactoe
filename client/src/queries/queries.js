@@ -16,7 +16,26 @@ const getGameQuery = gql`
       }
     }
   }
-`
+`;
+
+const getLastGameQuery = gql`
+  query{
+    lastGame{
+      id
+      player1
+      player2
+      moves
+      isCompleted
+      isPending
+      players {
+        id
+        name
+        gameID
+      }
+    }
+  }
+`;
+
 const getPlayerQuery = gql`
   query($id: ID!){
     player(id: $id){
@@ -33,7 +52,7 @@ const getPlayerQuery = gql`
       }
     }
   }
-`
+`;
 
 const getGamesQuery = gql`
   query{
@@ -51,7 +70,7 @@ const getGamesQuery = gql`
       }
     }
   }
-`
+`;
 
 const getPlayersQuery = gql`
   {
@@ -69,7 +88,7 @@ const getPlayersQuery = gql`
       }
     }
   }
-`
+`;
 const addGameMutation = gql`
   mutation($player1: ID, $player2: ID, $isCompleted: Boolean, $moves: [String], $isPending: Boolean) {
     addGame(player1: $player1, player2: $player2, isCompleted: $isCompleted, moves: $moves, isPending: $isPending){
@@ -81,7 +100,7 @@ const addGameMutation = gql`
       isPending
     }
   }
-`
+`;
 const updateGameMutation = gql`
   mutation($id: ID!, $player1: ID, $player2: ID, $isCompleted: Boolean, $moves: [String], $isPending: Boolean) {
     updateGame(id: $id, player1: $player1, player2: $player2, isCompleted: $isCompleted, moves: $moves, isPending: $isPending){
@@ -93,7 +112,7 @@ const updateGameMutation = gql`
       isPending
     }
   }
-`
+`;
 
 const addPlayerMutation = gql`
   mutation($name: String!, $gameID: ID!) {
@@ -103,5 +122,15 @@ const addPlayerMutation = gql`
       gameID
     }
   }
-`
-export { getGamesQuery, getPlayersQuery, getGameQuery, getPlayerQuery, addGameMutation, addPlayerMutation, updateGameMutation };
+`;
+
+export {
+  getGamesQuery,
+  getPlayersQuery,
+  getGameQuery,
+  getPlayerQuery,
+  addGameMutation,
+  addPlayerMutation,
+  updateGameMutation,
+  getLastGameQuery,
+};
