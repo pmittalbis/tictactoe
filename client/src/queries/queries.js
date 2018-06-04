@@ -124,6 +124,19 @@ const addPlayerMutation = gql`
   }
 `;
 
+const updateGameSubscription = gql`
+  subscription {
+    updatedGame { 
+      id
+      player1
+      player2
+      moves
+      isCompleted
+      isPending
+    }
+  }
+`;
+
 export {
   getGamesQuery,
   getPlayersQuery,
