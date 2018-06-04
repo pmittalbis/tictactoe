@@ -3,88 +3,42 @@ import { graphql, compose } from 'react-apollo';
 import {
   addGameMutation,
   addPlayerMutation,
-  updateGameMutation,
   getLastGameQuery,
+  updateGameMutation,
 } from '../queries/queries';
 
 let addedGame;
+let moves;
 let p1;
 let p2;
 let updatedGame1;
 let updatedGame2;
-let moves;
 class Board extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      player1: 'X',
-      player2: 'O',
       button1Text: 'Waiting for Player1 to join',
       button2Text: 'Waiting for Player2 to join',
-      currentPlayer: 1,
       currentGame: null,
+      currentPlayer: 1,
       message: 'Waiting for Players to join the game...',
+      player1: 'X',
+      player2: 'O',
     };
+    this.updateHandler = this.updateHandler.bind(this);
     this.addGame = this.addGame.bind(this);
-    this.checkRowMatches = this.checkRowMatches.bind(this);
     this.checkColumnMatches = this.checkColumnMatches.bind(this);
     this.checkDiagonalMatches = this.checkDiagonalMatches.bind(this);
-    this.onButtonClick = this.onButtonClick.bind(this);
+    this.checkRowMatches = this.checkRowMatches.bind(this);
     this.onAddPlayer1Click = this.onAddPlayer1Click.bind(this);
     this.onAddPlayer2Click = this.onAddPlayer2Click.bind(this);
+    this.onButtonClick = this.onButtonClick.bind(this);
     this.resetGame = this.resetGame.bind(this);
   }
 
   componentWillMount() {
     // debugger;
     this.addGame();
-  }
-
-  checkRowMatches(move) {
-    if (moves[0] === move && moves[1] === move && moves[2] === move) {
-      alert('Player' + this.state.currentPlayer + ' wins!');
-      this.resetGame();
-      return true;
-    } else if (moves[3] === move && moves[4] === move && moves[5] === move) {
-      alert('Player' + this.state.currentPlayer + ' wins!');
-      this.resetGame();
-      return true;
-    } else if (moves[6] === move && moves[7] === move && moves[8] === move) {
-      alert('Player' + this.state.currentPlayer + ' wins!');
-      this.resetGame();
-      return true;
-    }
-    return false;
-  }
-
-  checkColumnMatches(move) {
-    if (moves[0] === move && moves[3] === move && moves[6] === move) {
-      alert('Player' + this.state.currentPlayer + ' wins!');
-      this.resetGame();
-      return true;
-    } else if (moves[1] === move && moves[4] === move && moves[7] === move) {
-      alert('Player' + this.state.currentPlayer + ' wins!');
-      this.resetGame();
-      return true;
-    } else if (moves[2] === move && moves[5] === move && moves[8] === move) {
-      alert('Player' + this.state.currentPlayer + ' wins!');
-      this.resetGame();
-      return true;
-    }
-    return false;
-  }
-
-  checkDiagonalMatches(move) {
-    if (moves[0] === move && moves[4] === move && moves[8] === move) {
-      alert('Player' + this.state.currentPlayer + ' wins!');
-      this.resetGame();
-      return true;
-    } else if (moves[2] === move && moves[4] === move && moves[6] === move) {
-      alert('Player' + this.state.currentPlayer + ' wins!');
-      this.resetGame();
-      return true;
-    }
-    return false;
   }
 
   async onAddPlayer1Click() {
@@ -108,10 +62,15 @@ class Board extends Component {
         currentGame: updatedGame1.data.updateGame,
         button1Text: 'Player1 Joined',
       });
+    } else {
+      this.setState({
+        button1Text: 'Player1 Joined',
+      });
     }
   }
 
   async onAddPlayer2Click() {
+    // debugger;
     if (this.state.button1Text === 'Waiting for Player1 to join') {
       alert('Player1 must join first!!');
     } else
@@ -126,14 +85,19 @@ class Board extends Component {
       // debugger;
       updatedGame2 = await this.updateGame(
         this.state.currentGame.id,
-        p1.data.addPlayer.id,
+        this.state.currentGame.player1,
         p2.data.addPlayer.id,
         Array(9).fill(''),
         false,
-        false,
+        true,
       );
       this.setState({
         currentGame: updatedGame2.data.updateGame,
+        button2Text: 'Player2 Joined',
+        message: '',
+      });
+    } else {
+      this.setState({
         button2Text: 'Player2 Joined',
         message: '',
       });
@@ -151,7 +115,7 @@ class Board extends Component {
       },
       refetchQueries: [{ query: getLastGameQuery }],
     });
-    this.setState({
+    await this.setState({
       currentGame: addedGame.data.addGame,
     });
     console.log('Added game...', addedGame.data.addGame);
@@ -237,6 +201,52 @@ class Board extends Component {
     return true;
   }
 
+  checkColumnMatches(move) {
+    if (moves[0] === move && moves[3] === move && moves[6] === move) {
+      alert('Player' + this.state.currentPlayer + ' wins!');
+      this.resetGame();
+      return true;
+    } else if (moves[1] === move && moves[4] === move && moves[7] === move) {
+      alert('Player' + this.state.currentPlayer + ' wins!');
+      this.resetGame();
+      return true;
+    } else if (moves[2] === move && moves[5] === move && moves[8] === move) {
+      alert('Player' + this.state.currentPlayer + ' wins!');
+      this.resetGame();
+      return true;
+    }
+    return false;
+  }
+
+  checkDiagonalMatches(move) {
+    if (moves[0] === move && moves[4] === move && moves[8] === move) {
+      alert('Player' + this.state.currentPlayer + ' wins!');
+      this.resetGame();
+      return true;
+    } else if (moves[2] === move && moves[4] === move && moves[6] === move) {
+      alert('Player' + this.state.currentPlayer + ' wins!');
+      this.resetGame();
+      return true;
+    }
+    return false;
+  }
+
+  checkRowMatches(move) {
+    if (moves[0] === move && moves[1] === move && moves[2] === move) {
+      alert('Player' + this.state.currentPlayer + ' wins!');
+      this.resetGame();
+      return true;
+    } else if (moves[3] === move && moves[4] === move && moves[5] === move) {
+      alert('Player' + this.state.currentPlayer + ' wins!');
+      this.resetGame();
+      return true;
+    } else if (moves[6] === move && moves[7] === move && moves[8] === move) {
+      alert('Player' + this.state.currentPlayer + ' wins!');
+      this.resetGame();
+      return true;
+    }
+    return false;
+  }
   async updateGame(id, player1, player2, moves, isCompleted, isPending) {
     const data = await this.props.updateGameMutation({
       variables: {
@@ -269,6 +279,7 @@ class Board extends Component {
   }
 
   render() {
+    // debugger;
     const player = 'Player' + this.state.currentPlayer;
     return (
       <div>

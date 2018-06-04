@@ -1,7 +1,7 @@
 const graphql = require('graphql');
 const Player = require('../models/player.js');
 const Game = require('../models/game.js');
-
+const { PubSub } = 'graphql-subscriptions';
 const { 
   GraphQLObjectType,
   GraphQLString,
@@ -12,6 +12,9 @@ const {
   GraphQLNonNull,
   GraphQLBoolean,
 } = graphql;
+
+const pubsub = new PubSub();
+const UPDATED_GAME = 'updateGame';
 
 const PlayerType = new GraphQLObjectType({
   name: 'Player',
@@ -79,7 +82,6 @@ const RootQuery = new GraphQLObjectType({
       type: GameType,
       async resolve(parent, args){
         let lastGame = await Game.findOne().sort({ '_id': -1 }).limit(1);
-        console.log(lastGame);
         return lastGame;
       },
     }
@@ -95,7 +97,7 @@ const Mutation = new GraphQLObjectType({
         name: { type: new GraphQLNonNull(GraphQLString) },
         gameID: { type: new GraphQLNonNull(GraphQLID) }
       },
-      resolve(parent, args){
+      resolve(parent, args) {
         let player = new Player({
           name: args.name,
           gameID: args.gameID
@@ -112,15 +114,20 @@ const Mutation = new GraphQLObjectType({
         isPending: { type :GraphQLBoolean },
         moves: { type: new GraphQLList(GraphQLString) }
       },
-      resolve(parent, args){
-        let game = new Game({
-          player1: args.player1,
-          player2: args.player2,
-          isCompleted: false,
-          isPending: true,
-          moves: args.moves
-        });
-        return game.save();
+      async resolve(parent, args){
+        let pendingGame = await Game.findOne({ isPending: true }).sort({ '_id': -1 }).limit(1);
+        if (pendingGame) {
+          return pendingGame;
+        } else {
+          let game = new Game({
+            player1: args.player1,
+            player2: args.player2,
+            isCompleted: false,
+            isPending: true,
+            moves: args.moves
+          });
+          return game.save();
+        }
       },
     },
     updateGame: {
@@ -134,10 +141,6 @@ const Mutation = new GraphQLObjectType({
         isPending: { type: GraphQLBoolean },
       },
       async resolve(parent, args){
-        // console.log("game id = " ,args.id);
-        // console.log("player1 = " ,args.player1);
-        // console.log("player2 = " ,args.player2);
-        // console.log("isCompleted = " ,args.isCompleted);
         let game = await Game.findOneAndUpdate({_id: args.id}, {
           player1: args.player1,
           player2: args.player2,
@@ -151,7 +154,18 @@ const Mutation = new GraphQLObjectType({
   }
 });
 
+const Subscription = new GraphQLObjectType({
+  name: "Subscription",
+  fields: {
+    gameUpdated: {
+      type: Game,
+      subscribe: () => pubsub.asyncIterator(UPDATED_GAME)
+    }
+  }
+});
+
 module.exports = new GraphQLSchema({
   query: RootQuery,
   mutation: Mutation,
+  // subscription: Subscription,
 });
