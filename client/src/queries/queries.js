@@ -124,9 +124,9 @@ const addPlayerMutation = gql`
   }
 `;
 
-const updateGameSubscription = gql`
+const gameUpdatedSubscription = gql`
   subscription {
-    updatedGame { 
+    gameUpdated { 
       id
       player1
       player2
@@ -146,4 +146,5 @@ export {
   addPlayerMutation,
   updateGameMutation,
   getLastGameQuery,
+  gameUpdatedSubscription,
 };
