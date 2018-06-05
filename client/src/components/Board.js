@@ -5,6 +5,7 @@ import {
   addPlayerMutation,
   getLastGameQuery,
   updateGameMutation,
+  gameUpdatedSubscription,
 } from '../queries/queries';
 
 let addedGame;
@@ -25,7 +26,6 @@ class Board extends Component {
       player1: 'X',
       player2: 'O',
     };
-    this.updateHandler = this.updateHandler.bind(this);
     this.addGame = this.addGame.bind(this);
     this.checkColumnMatches = this.checkColumnMatches.bind(this);
     this.checkDiagonalMatches = this.checkDiagonalMatches.bind(this);
@@ -67,6 +67,8 @@ class Board extends Component {
         button1Text: 'Player1 Joined',
       });
     }
+    // debugger;
+    console.log('Subscription', this.gameUpdatedSubscription);
   }
 
   async onAddPlayer2Click() {
@@ -203,16 +205,13 @@ class Board extends Component {
 
   checkColumnMatches(move) {
     if (moves[0] === move && moves[3] === move && moves[6] === move) {
-      alert('Player' + this.state.currentPlayer + ' wins!');
-      this.resetGame();
+      this.resetGame(this.state.currentPlayer);
       return true;
     } else if (moves[1] === move && moves[4] === move && moves[7] === move) {
-      alert('Player' + this.state.currentPlayer + ' wins!');
-      this.resetGame();
+      this.resetGame(this.state.currentPlayer);
       return true;
     } else if (moves[2] === move && moves[5] === move && moves[8] === move) {
-      alert('Player' + this.state.currentPlayer + ' wins!');
-      this.resetGame();
+      this.resetGame(this.state.currentPlayer);
       return true;
     }
     return false;
@@ -220,12 +219,10 @@ class Board extends Component {
 
   checkDiagonalMatches(move) {
     if (moves[0] === move && moves[4] === move && moves[8] === move) {
-      alert('Player' + this.state.currentPlayer + ' wins!');
-      this.resetGame();
+      this.resetGame(this.state.currentPlayer);
       return true;
     } else if (moves[2] === move && moves[4] === move && moves[6] === move) {
-      alert('Player' + this.state.currentPlayer + ' wins!');
-      this.resetGame();
+      this.resetGame(this.state.currentPlayer);
       return true;
     }
     return false;
@@ -233,16 +230,13 @@ class Board extends Component {
 
   checkRowMatches(move) {
     if (moves[0] === move && moves[1] === move && moves[2] === move) {
-      alert('Player' + this.state.currentPlayer + ' wins!');
-      this.resetGame();
+      this.resetGame(this.state.currentPlayer);
       return true;
     } else if (moves[3] === move && moves[4] === move && moves[5] === move) {
-      alert('Player' + this.state.currentPlayer + ' wins!');
-      this.resetGame();
+      this.resetGame(this.state.currentPlayer);
       return true;
     } else if (moves[6] === move && moves[7] === move && moves[8] === move) {
-      alert('Player' + this.state.currentPlayer + ' wins!');
-      this.resetGame();
+      this.resetGame(this.state.currentPlayer);
       return true;
     }
     return false;
@@ -263,8 +257,10 @@ class Board extends Component {
     return data;
   }
 
-  resetGame() {
+  async resetGame(currentPlayer) {
+    debugger;
     console.log(moves);
+    alert('Player' + currentPlayer + ' wins!');
     this.props.updateGameMutation({
       variables: {
         id: this.state.currentGame.id,
@@ -274,8 +270,9 @@ class Board extends Component {
         isCompleted: true,
         isPending: false,
       },
-    });
-    window.location.reload();
+    })
+    .then(() => { window.location.reload() })
+    .catch((err) => { console.log(err) });
   }
 
   render() {
@@ -331,4 +328,5 @@ export default compose(
   graphql(addGameMutation, { name: 'addGameMutation' }),
   graphql(addPlayerMutation, { name: 'addPlayerMutation' }),
   graphql(updateGameMutation, { name: 'updateGameMutation' }),
+  graphql(gameUpdatedSubscription, { name: 'gameUpdatedSubscription' }),
 )(Board);

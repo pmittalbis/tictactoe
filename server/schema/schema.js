@@ -1,7 +1,7 @@
 const graphql = require('graphql');
 const Player = require('../models/player.js');
 const Game = require('../models/game.js');
-const { PubSub } = 'graphql-subscriptions';
+const websocket = require('./websocket.js');
 const { 
   GraphQLObjectType,
   GraphQLString,
@@ -13,7 +13,7 @@ const {
   GraphQLBoolean,
 } = graphql;
 
-const pubsub = new PubSub();
+// const pubsub = new PubSub();
 const UPDATED_GAME = 'updateGame';
 
 const PlayerType = new GraphQLObjectType({
@@ -117,6 +117,9 @@ const Mutation = new GraphQLObjectType({
       async resolve(parent, args){
         let pendingGame = await Game.findOne({ isPending: true }).sort({ '_id': -1 }).limit(1);
         if (pendingGame) {
+          websocket.publish('GAME_ADDED', {
+            gameAdded: {id: 1}
+          });
           return pendingGame;
         } else {
           let game = new Game({
@@ -125,6 +128,9 @@ const Mutation = new GraphQLObjectType({
             isCompleted: false,
             isPending: true,
             moves: args.moves
+          });
+          websocket.publish('GAME_ADDED', {
+            gameAdded: {id: 1}
           });
           return game.save();
         }
@@ -148,6 +154,10 @@ const Mutation = new GraphQLObjectType({
           isCompleted: args.isCompleted,
           isPending: args.isPending 
         }, { new: true });
+    
+        await websocket.publish('GAME_UPDATED', {
+          gameUpdated: game
+        })
         return game;
       },
     }
@@ -157,15 +167,19 @@ const Mutation = new GraphQLObjectType({
 const Subscription = new GraphQLObjectType({
   name: "Subscription",
   fields: {
+    gameAdded: {
+      type: GameType,
+      subscribe: () => websocket.asyncIterator('GAME_ADDED')
+    },
     gameUpdated: {
-      type: Game,
-      subscribe: () => pubsub.asyncIterator(UPDATED_GAME)
-    }
+      type: GameType,
+      subscribe: () => websocket.asyncIterator('GAME_UPDATED')
+    },
   }
 });
 
 module.exports = new GraphQLSchema({
   query: RootQuery,
   mutation: Mutation,
-  // subscription: Subscription,
+  subscription: Subscription,
 });
