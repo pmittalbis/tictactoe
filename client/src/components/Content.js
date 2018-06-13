@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 
-// eslint-disable-next-line prefer-stateless-function
 class Content extends Component {
   render() {
     return (

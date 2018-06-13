@@ -7,6 +7,7 @@ const gameSchema = new  Schema({
   isCompleted: Boolean,
   isPending: Boolean,
   moves: [String],
+  currentPlayer: Number,
 });
 
 module.exports = mongoose.model('Game', gameSchema);

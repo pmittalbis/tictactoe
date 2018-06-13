@@ -9,6 +9,7 @@ const getGameQuery = gql`
       moves
       isCompleted
       isPending
+      currentPlayer
       players {
         id
         name
@@ -27,6 +28,7 @@ const getLastGameQuery = gql`
       moves
       isCompleted
       isPending
+      currentPlayer
       players {
         id
         name
@@ -49,6 +51,7 @@ const getPlayerQuery = gql`
         moves
         isCompleted
         isPending
+        currentPlayer
       }
     }
   }
@@ -63,6 +66,7 @@ const getGamesQuery = gql`
       moves
       isCompleted
       isPending
+      currentPlayer
       players {
         id
         name
@@ -73,7 +77,7 @@ const getGamesQuery = gql`
 `;
 
 const getPlayersQuery = gql`
-  {
+  query{
     players{
       id
       name
@@ -85,31 +89,34 @@ const getPlayersQuery = gql`
         moves
         isCompleted
         isPending
+        currentPlayer
       }
     }
   }
 `;
 const addGameMutation = gql`
-  mutation($player1: ID, $player2: ID, $isCompleted: Boolean, $moves: [String], $isPending: Boolean) {
-    addGame(player1: $player1, player2: $player2, isCompleted: $isCompleted, moves: $moves, isPending: $isPending){
+  mutation($player1: ID, $player2: ID, $isCompleted: Boolean, $moves: [String], $isPending: Boolean, $currentPlayer: Int) {
+    addGame(player1: $player1, player2: $player2, isCompleted: $isCompleted, moves: $moves, isPending: $isPending, currentPlayer: $currentPlayer){
       id
       player1
       player2
       moves
       isCompleted
       isPending
+      currentPlayer
     }
   }
 `;
 const updateGameMutation = gql`
-  mutation($id: ID!, $player1: ID, $player2: ID, $isCompleted: Boolean, $moves: [String], $isPending: Boolean) {
-    updateGame(id: $id, player1: $player1, player2: $player2, isCompleted: $isCompleted, moves: $moves, isPending: $isPending){
+  mutation($id: ID!, $player1: ID, $player2: ID, $isCompleted: Boolean, $moves: [String], $isPending: Boolean, $currentPlayer: Int) {
+    updateGame(id: $id, player1: $player1, player2: $player2, isCompleted: $isCompleted, moves: $moves, isPending: $isPending, currentPlayer: $currentPlayer){
       id
       player1
       player2
       moves
       isCompleted
       isPending
+      currentPlayer
     }
   }
 `;
@@ -133,6 +140,7 @@ const gameUpdatedSubscription = gql`
       moves
       isCompleted
       isPending
+      currentPlayer
     }
   }
 `;
