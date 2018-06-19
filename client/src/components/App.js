@@ -1,6 +1,9 @@
-import React, { Component } from 'react';
+import React from 'react';
 import Notifications from 'react-notify-toast';
-import { SubscriptionClient, addGraphQLSubscriptions } from 'subscriptions-transport-ws';
+import {
+  SubscriptionClient,
+  addGraphQLSubscriptions
+} from 'subscriptions-transport-ws';
 import {
   ApolloClient,
   ApolloProvider,
@@ -35,18 +38,16 @@ const client = new ApolloClient({
   },
 });
 
-class App extends Component {
-  render() {
-    return (
-      <ApolloProvider client={client}>
-        <div>
-          <Notifications />
-          <Header />
-          <Board />
-        </div>
-      </ApolloProvider>
-    );
-  }
+function App(props) {
+  return (
+    <ApolloProvider client={client}>
+      <div>
+        <Notifications />
+        <Header />
+        <Board />
+      </div>
+    </ApolloProvider>
+  );
 }
 
 export default App;

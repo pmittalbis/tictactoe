@@ -1,8 +1,10 @@
 import Player from '../models/player.js';
 import Game from '../models/game.js';
 import { PubSub, withFilter } from 'graphql-subscriptions';
+
 const pubsub = new PubSub();
 const UPDATED_GAME = 'UPDATED_GAME';
+
 export const resolvers = {
   Query: {
     player: (root, id) => {
@@ -23,9 +25,8 @@ export const resolvers = {
     addGame: async (root, args) => {
       let pendingGame = await Game.findOne({ isPending: true }).sort({ '_id': -1 }).limit(1);
       if (pendingGame) {
-        console.log("pendingGame",pendingGame);
         pubsub.publish(UPDATED_GAME, {
-          gameUpdated: pendingGame
+          gameUpdated: pendingGame,
         });
         return pendingGame;
       } else {
@@ -37,9 +38,8 @@ export const resolvers = {
           moves: args.moves,
           currentPlayer: args.currentPlayer,
         });
-        console.log("Game",game);
         pubsub.publish(UPDATED_GAME, {
-          gameUpdated: game
+          gameUpdated: game,
         });
         return game.save();
       }
@@ -61,8 +61,8 @@ export const resolvers = {
         currentPlayer: args.currentPlayer,
       }, { new: true });
       pubsub.publish(UPDATED_GAME, {
-        gameUpdated: game
-      })
+        gameUpdated: game,
+      });
       return game;
     },
   },
@@ -72,8 +72,7 @@ export const resolvers = {
       subscribe: withFilter(
         () => pubsub.asyncIterator(UPDATED_GAME),
         (payload, variables) => {
-          //console.log('payload == ', payload);
-          return true
+          return payload.id === variables.gameID
         }
       )
     },
