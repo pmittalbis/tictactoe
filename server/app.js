@@ -37,7 +37,7 @@ ws.listen(PORT, (err) => {
   console.log(`Listening at Port ${PORT}...`);
 });
 
-server.use('*', cors({ origin: 'http://localhost:3000' }));
+server.use('*', cors({ origin: '*' }));
 
 server.use('/graphql', bodyParser.json(), graphqlExpress({
   schema,
