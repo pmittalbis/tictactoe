@@ -94,6 +94,7 @@ const getPlayersQuery = gql`
     }
   }
 `;
+
 const addGameMutation = gql`
   mutation($player1: ID, $player2: ID, $isCompleted: Boolean, $moves: [String], $isPending: Boolean, $currentPlayer: Int) {
     addGame(player1: $player1, player2: $player2, isCompleted: $isCompleted, moves: $moves, isPending: $isPending, currentPlayer: $currentPlayer){
@@ -107,6 +108,7 @@ const addGameMutation = gql`
     }
   }
 `;
+
 const updateGameMutation = gql`
   mutation($id: ID!, $player1: ID, $player2: ID, $isCompleted: Boolean, $moves: [String], $isPending: Boolean, $currentPlayer: Int) {
     updateGame(id: $id, player1: $player1, player2: $player2, isCompleted: $isCompleted, moves: $moves, isPending: $isPending, currentPlayer: $currentPlayer){
